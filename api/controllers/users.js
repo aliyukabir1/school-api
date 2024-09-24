@@ -6,14 +6,16 @@ const jwt = require("jsonwebtoken");
 const { token } = require("morgan");
 
 exports.get_users = (req, res) => {
-  
-User.find().exec().then(doc=>{
-    res.status(200).json({
-        body:doc
+  User.find()
+    .exec()
+    .then((doc) => {
+      res.status(200).json({
+        body: doc,
+      });
     })
-}).catch(err=>{
-    res.status(500).json(err)
-})
+    .catch((err) => {
+      res.status(500).json(err);
+    });
 };
 
 // sign in
@@ -72,15 +74,44 @@ exports.sign_up = (req, res) => {
             });
 
             user.save().then((value) => {
+               
               res
                 .status(201)
                 .json({
                   message: `User created successfully with email: ${req.body.email}`,
                 })
-                .catch((err) => res.status(500).json({ error: err.message }));
-            });
+                
+            }).catch((err) => res.status(500).json({ error: err.message }));;
           }
         });
       }
+    });
+};
+
+exports.reset_password = (req, res) => {
+  User.findOne({ email: req.body.email })
+    .exec()
+    .then((user) => {
+      if (req.body.oldPassword === req.body.newPassword)
+        return res.status(500).json({
+          message: "Can't use same password as the old one",
+        });
+      var storedPassword = user.password;
+      bcrypt.compare(req.body.oldPassword, storedPassword, (error, result) => {
+        if (result) {
+          bcrypt.hash(req.body.newPassword, 10, (err, hash) => {
+            const filter = { email: user.email };
+            const update = { password: hash };
+            User.findOneAndUpdate(filter, update, { new: true }).exec();
+            res.status(200).json({
+              message: "Password Reset Successful",
+            });
+          });
+        } else {
+          res.status(500).json({
+            message: "Old password is incorrect",
+          });
+        }
+      });
     });
 };
