@@ -1,6 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const userRoute = require('./api/routes/users');
+const prefectsRoute = require('./api/routes/prefects')
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser')
 
@@ -38,6 +39,7 @@ db.on('error',()=>{console.log('Connection to database failed')})
 
 // middleware routes
 app.use('/users',userRoute);
+app.use('/prefects',prefectsRoute);
 
 
 app.get('/',(req,res)=>{

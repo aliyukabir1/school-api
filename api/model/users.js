@@ -21,5 +21,10 @@ const userSchema = mongoose.Schema({
   courses: { type: Array },
   paidSchoolFees: { type: Boolean },
   dateRegistered: { type: Date },
+  resetToken:{type:String},
+  role: {type:String,
+  enum: ["Prefect","Normal"],
+  default: "Normal",
+  }
 });
 module.exports = mongoose.model("User", userSchema);
