@@ -3,7 +3,8 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const User = require("../model/users");
 const jwt = require("jsonwebtoken");
-const { token } = require("morgan");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 
 exports.get_users = (req, res) => {
   User.find()
@@ -73,15 +74,14 @@ exports.sign_up = (req, res) => {
               password: hash,
             });
 
-            user.save().then((value) => {
-               
-              res
-                .status(201)
-                .json({
+            user
+              .save()
+              .then((value) => {
+                res.status(201).json({
                   message: `User created successfully with email: ${req.body.email}`,
-                })
-                
-            }).catch((err) => res.status(500).json({ error: err.message }));;
+                });
+              })
+              .catch((err) => res.status(500).json({ error: err.message }));
           }
         });
       }
@@ -113,5 +113,50 @@ exports.reset_password = (req, res) => {
           });
         }
       });
+    });
+};
+
+exports.forgot_password = (req, res) => {
+  var email = req.body.email;
+  User.findOne({ email })
+    .exec()
+    .then((user) => {
+      if (user) {
+        const reset_token = crypto.randomBytes(20).toString("hex");
+        User.findOneAndUpdate(user, { reset_token }, { new: true }).exec();
+        // const transporter = nodemailer.createTransport({
+        //     host: 'smtp.ethereal.email',
+        //     port: 587,
+        //     auth: {
+        //         user: 'chadrick87@ethereal.email',
+        //         pass: 'CzQMqrDJMrx5YxYK9T'
+        //     },
+        //     tls:{
+        //         rejectUnauthorized:false
+        //     }
+        // });
+        // const mailOptions = {
+        //   from: "aliyos",
+        //   to: email,
+        //   subject: "Password Reset",
+        //   text: "This is just a test",
+        // };
+        // transporter.sendMail(mailOptions, (err, info) => {
+        //   if (err) {
+        //     console.log(err);
+        //     res.status(500).send("Error sending email");
+        //   } else {
+        //     console.log(`Email sent: ${info.response}`);
+        //     res
+        //       .status(200)
+        //       .send(
+        //         "Check your email for instructions on resetting your password"
+        //       );
+        //   }
+        // });
+
+      } else {
+        res.status(404).send("Email not found");
+      }
     });
 };
