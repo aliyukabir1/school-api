@@ -160,3 +160,37 @@ exports.forgot_password = (req, res) => {
       }
     });
 };
+
+exports.delete_user = async (req,res)=>{
+    try {
+        var user = await  User.findByIdAndDelete(req.params.id).exec();
+        res.status(200).json({
+            message:"Deleted : "+ user.email 
+        });   
+    } catch (error) {
+        res.status(404).json({message: "User not found "+ error});
+
+    }
+  
+}
+
+exports.get_user =  (req,res)=>{
+    try {
+         User.findOne({_id: req.params.id}).exec().then((user)=>{
+            console.log(user)
+            if (user){
+                res.status(200).json({
+                    message:"Sucess",
+                   user :user
+                });   
+            }else{
+        res.status(404).json({message: "User not found"});      
+            }
+         });
+       
+    } catch (error) {
+        res.status(404).json({message: "User not found "+ error});
+
+    }
+  
+}
